@@ -74,8 +74,6 @@ public class Operaciones {
                 System.out.println("Alumno no encontrado");
             }
 
-            System.out.println("Nota actualizada");
-
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -89,16 +87,63 @@ public class Operaciones {
             Conexion con = new Conexion();
             Connection cn = con.conectar();
 
-            System.out.print("Carnet: ");
-            String carnet = sc.nextLine();
+            System.out.println("Buscar alumno por: ");
+            System.out.println("1 Carnet");
+            System.out.println("2 Nombre");
 
-            String sql = "DELETE FROM alumnos WHERE carnet=?";
+            System.out.print("Seleccione una opción: ");
+            int opcion =Integer.parseInt(sc.nextLine());
 
-            PreparedStatement ps = cn.prepareStatement(sql);
+            String sqlBuscar = "";
+            String dato = "";
 
-            ps.setString(1, carnet);
-            ps.executeUpdate();
-            System.out.println("Alumno eliminado");
+            if(opcion ==1){
+                System.out.print("Ingrese Carnet: ");
+                dato = sc.nextLine();
+
+                sqlBuscar = "SELECT * FROM alumnos WHERE carnet=?";
+            }else if(opcion ==2){
+                System.out.print("Ingrese nombre: ");
+                dato = sc.nextLine();
+
+                sqlBuscar = "SELECT * FROM alumnos WHERE nombres=?";
+            }else{
+                System.out.println("Opción inválida");
+                return;
+            }
+
+            PreparedStatement psBuscar = cn.prepareStatement(sqlBuscar);
+
+            psBuscar.setString(1, dato);
+            ResultSet rs = psBuscar.executeQuery();
+
+            if(rs.next()){
+                System.out.println("\n==== ALUMNO ENCONTTADO ====");
+
+                System.out.println("Carnet: " + rs.getString("carnet"));
+                System.out.println("Nombres: " + rs.getString("nombres"));
+                System.out.println("Apellidos: " + rs.getString("apellidos"));
+                System.out.println("Sección: " + rs.getString("seccion"));
+                System.out.println("Nota: " + rs.getDouble("nota"));
+
+                System.out.println("\n¿Esta seguro de eliminar al alumno? (S/N): ");
+                String respuesta = sc.nextLine();
+
+                if(respuesta.equalsIgnoreCase("S")){
+                    String sqlEliminar = "DELETE FROM alumnos WHERE carnet=?";
+                    PreparedStatement psEliminar = cn.prepareStatement(sqlEliminar);
+                    psEliminar.setString(1, rs.getString("carnet"));
+                    int resultado = psEliminar.executeUpdate();
+
+                    if(resultado > 0){
+                        System.out.println("Alumno eliminado correctamente");
+                    }else{
+                        System.out.println("Eliminación cancelada");
+                    }
+                }else{
+                    System.out.println("Alumno no encontrado");
+                }
+            }
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
